@@ -21,9 +21,9 @@
           yt-dlp
         ];
       in rec {
-        packages = {
-          yt-watcher = pkgs.stdenv.mkDerivation rec {
-            nativeBuildInputs = with pkgs; [ makeWrapper ];
+        packages = with pkgs; {
+          yt-watcher = stdenv.mkDerivation rec {
+            nativeBuildInputs = [ makeWrapper ];
             inherit buildInputs;
             name = "yt-watcher";
             src = ./.;
@@ -31,7 +31,7 @@
               mkdir -p $out/bin
               mkdir -p $out/nu
               cp ./${name}.nu $out/nu
-              makeWrapper ${pkgs.nushell}/bin/nu $out/bin/${name} \
+              makeWrapper ${nushell}/bin/nu $out/bin/${name} \
                 --add-flags "$out/nu/${name}.nu"
             '';
           };
