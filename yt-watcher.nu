@@ -89,7 +89,7 @@ def get-config [] {
 def download [
     url: string # Youtube url
 ] {
-    yt-dlp $url --paths "~/yt-watcher"
+    yt-dlp $url --paths $"($config.output)"
 }
 
 def main [] {
