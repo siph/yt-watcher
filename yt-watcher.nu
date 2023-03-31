@@ -93,6 +93,8 @@ def download [
 }
 
 def main [] {
+    print "Started yt-watcher with config:"
+    print ($config | to yaml)
     loop {
         $config.channels | each { |it|
             get-vids new $it -d $config.query.age | where { |file|
