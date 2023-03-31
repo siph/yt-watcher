@@ -23,7 +23,7 @@ def get-type [] {
     describe | split row '<' | get 0
 }
 
-# Query youtube for channel RSS and return table of videos with columns [ title url date ]
+# Query youtube for channel RSS and return table of videos with columns  [id title channel url date ]
 def get-vids [
     id: string # Youtube channel ID.
 ] {
@@ -44,7 +44,7 @@ def get-vids [
         } | flatten
 }
 
-# Query youtube for channel RSS and return table of videos posted within the last `duration` with columns [ title url date ]
+# Query youtube for channel RSS and return table of videos posted within the last `duration` with columns [id title channel url date ]
 def "get-vids new" [
     id: string # Youtube channel ID.
     --duration (-d): string = "1hr" # Filter videos uploaded within the last `duration`. Default is 1hr.
