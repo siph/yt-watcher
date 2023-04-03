@@ -105,7 +105,7 @@ def main [] {
                 download $vid.url
             }
         } | ignore
-        sleep ($config.query.interval | into duration)
         if ($config.loop != true) { break }
+        sleep ($config.query.interval | into duration)
     }
 }
