@@ -20,8 +20,8 @@
           nushell
           yt-dlp
         ];
-      in rec {
-        packages = with pkgs; {
+      in with pkgs; rec {
+        packages = {
           yt-watcher = stdenv.mkDerivation rec {
             nativeBuildInputs = [ makeWrapper ];
             inherit buildInputs;
@@ -41,7 +41,7 @@
           yt-watcher = flake-utils.lib.mkApp { drv = packages.yt-watcher; };
           default = apps.yt-watcher;
         };
-        devShells = with pkgs; {
+        devShells = {
           default = mkShell {
             inherit buildInputs;
           };
