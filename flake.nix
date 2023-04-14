@@ -41,6 +41,41 @@
           yt-watcher = flake-utils.lib.mkApp { drv = packages.yt-watcher; };
           default = apps.yt-watcher;
         };
+        nixosModules = {
+          default = { pkgs, lib, config, ... }:
+          with lib;
+          let
+            cfg = config.services.yt-watcher;
+          in {
+            options.services.yt-watcher = {
+              enable = mkOption {
+                type = types.bool;
+                default = false;
+                description = ''
+                  Run yt-watcher as service.
+                '';
+              };
+            };
+            config = mkIf cfg.enable {
+              systemd.user = {
+                services = {
+                  yt-watcher = {
+                    Service = {
+                      ExecStart = "${(self.packages.${system}.default)}/bin/yt-watcher";
+                      Restart = "on-failure";
+                      OOMPolicy = "kill";
+                      Environment = "XDG_CONFIG_HOME=$HOME/.config";
+                    };
+                    Unit = {
+                      Description = "Youtube auto-downloader";
+                      Documentation = "https://www.github.com/siph/yt-watcher";
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
         devShells = {
           default = mkShell {
             inherit buildInputs;
