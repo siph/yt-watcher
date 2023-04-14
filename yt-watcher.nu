@@ -1,6 +1,6 @@
 #!/usr/bin/env nu
 
-let config = get-config;
+let config = (get-config);
 
 # Helper function for filtering data by string. Records are transposed into tables with "key" and "value" columns.
 # > $env | string-search config key
