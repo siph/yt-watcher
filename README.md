@@ -44,6 +44,29 @@ nix run
 nix run "github:siph/yt-watcher"
 ```
 
+`yt-watcher` can also be ran as a systemd service, either user or system-wide,
+by including either the `system` or `home-manager` modules into your
+configuration.
+```nix
+{
+    # nixos system
+    nixpkgs.lib.nixosSystem = {
+        modules = [
+            yt-watcher.nixosModules.x86_64-linux.nixos
+            { services.yt-watcher.enable = true; }
+        ];
+    };
+
+    # home-manager
+    home-manager.lib.homeManagerConfiguration = {
+        modules = [
+            yt-watcher.nixosModules.x86_64-linux.home-manager
+            { services.yt-watcher.enable = true; }
+        ];
+    };
+}
+```
+
 
 ### Nushell
 

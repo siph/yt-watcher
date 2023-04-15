@@ -95,6 +95,7 @@ def download [
     yt-dlp -q $url --paths $output_folder
 }
 
+# Download recent youtube videos from a list of channel ids.
 def main [config_path?: string] {
     let config = (get-config $config_path)
     print "Started yt-watcher with config:"
