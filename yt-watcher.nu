@@ -1,7 +1,5 @@
 #!/usr/bin/env nu
 
-let config = get-config;
-
 # Helper function for filtering data by string. Records are transposed into tables with "key" and "value" columns.
 # > $env | string-search config key
 def string-search [
@@ -56,31 +54,35 @@ def "get-vids new" [
 }
 
 # Get configuration or build default.
-def get-config [] {
-    let default_config = ({
-        query: {
-            interval:'1min'
-            age:'24hr'
-        }
-        loop:true
-        verbose:true
-        output:($"($env.HOME)/yt-watcher")
-        channels:[
-            UCaYhcUwRBNscFNUKTjgPFiA
-            UCrW38UKhlPoApXiuKNghuig
-            UCXuqSBlHAE6Xw-yeJA0Tunw
-        ]
-    })
-    let config_folder = $"($env.XDG_CONFIG_HOME)/yt-watcher"
+def get-config [config_path?: string] {
+    let dir = (
+        if ($config_path == null) {
+            $"($env.XDG_CONFIG_HOME)/yt-watcher"
+        } else { $config_path }
+    )
     try {
-        let config = (open $"($config_folder)/config.yaml")
+        let config = (open $"($dir)/config.yaml")
         mkdir $"($config.output)"
         return $config
     } catch {
+        let default_config = ({
+            query: {
+                interval:'1min'
+                age:'24hr'
+            }
+            loop:true
+            verbose:true
+            output:($"($env.HOME)/yt-watcher")
+            channels:[
+                UCaYhcUwRBNscFNUKTjgPFiA
+                UCrW38UKhlPoApXiuKNghuig
+                UCXuqSBlHAE6Xw-yeJA0Tunw
+            ]
+        })
         print "Exporting default configuration..."
-        mkdir $config_folder
+        mkdir $dir
         mkdir $default_config.output
-        $default_config | to yaml | tee $"($config_folder)/config.yaml"
+        $default_config | to yaml | tee $"($dir)/config.yaml"
         return ($default_config)
     }
 }
@@ -88,11 +90,14 @@ def get-config [] {
 # download with `yt-dlp`.
 def download [
     url: string # Youtube url
+    output_folder: string # File destination
 ] {
-    yt-dlp $url --paths $"($config.output)"
+    yt-dlp -q $url --paths $output_folder
 }
 
-def main [] {
+# Download recent youtube videos from a list of channel ids.
+def main [config_path?: string] {
+    let config = (get-config $config_path)
     print "Started yt-watcher with config:"
     print ($config | to yaml)
     loop {
@@ -102,7 +107,7 @@ def main [] {
                 ((ls $config.output | string-search $"[($file.id)]" name | length ) == 0))
             } | each { |vid|
                 print $vid
-                download $vid.url
+                download $vid.url $config.output
             }
         } | ignore
         if ($config.loop != true) { break }
