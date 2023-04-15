@@ -61,10 +61,9 @@
                 services = {
                   yt-watcher = {
                     Service = {
-                      ExecStart = "${(self.packages.${system}.default)}/bin/yt-watcher";
+                      ExecStart = "${(self.packages.${system}.default)}/bin/yt-watcher ~/.config/yt-watcher";
                       Restart = "on-failure";
                       OOMPolicy = "kill";
-                      Environment = "XDG_CONFIG_HOME=$HOME/.config";
                     };
                     Unit = {
                       Description = "Youtube auto-downloader";
