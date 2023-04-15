@@ -42,7 +42,7 @@
           default = apps.yt-watcher;
         };
         nixosModules = {
-          default = { pkgs, lib, config, ... }:
+          home-manager = { pkgs, lib, config, ... }:
           with lib;
           let
             cfg = config.services.yt-watcher;
@@ -68,6 +68,36 @@
                     Unit = {
                       Description = "Youtube auto-downloader";
                       Documentation = "https://www.github.com/siph/yt-watcher";
+                    };
+                  };
+                };
+              };
+            };
+          };
+          nixos = { pkgs, lib, config, ... }:
+          with lib;
+          let
+            cfg = config.services.yt-watcher;
+          in {
+            options.services.yt-watcher = {
+              enable = mkOption {
+                type = types.bool;
+                default = false;
+                description = ''
+                  Run yt-watcher as service.
+                '';
+              };
+            };
+            config = mkIf cfg.enable {
+              systemd = {
+                services = {
+                  yt-watcher = {
+                    serviceConfig = {
+                      Restart = "on-failure";
+                      ExecStart = "${(self.packages.${system}.default)}/bin/yt-watcher ~/.config/yt-watcher";
+                      OOMPolicy = "kill";
+                      Documentation = "https://www.github.com/siph/yt-watcher";
+                      Description = "Youtube auto-downloader";
                     };
                   };
                 };
