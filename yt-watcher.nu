@@ -84,7 +84,7 @@ def get-config [config_path?: string] {
         std log warning "Exporting default configuration..."
         mkdir $dir
         mkdir $default_config.output
-        $default_config | to yaml | tee $"($dir)/config.yaml"
+        $default_config | to yaml | save $"($dir)/config.yaml"
         return ($default_config)
     }
 }
