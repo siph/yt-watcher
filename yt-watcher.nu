@@ -1,5 +1,7 @@
 #!/usr/bin/env nu
 
+use std
+
 # Helper function for filtering data by string. Records are transposed into tables with "key" and "value" columns.
 # > $env | string-search config key
 def string-search [
@@ -79,7 +81,7 @@ def get-config [config_path?: string] {
                 UCXuqSBlHAE6Xw-yeJA0Tunw
             ]
         })
-        print "Exporting default configuration..."
+        std log warning "Exporting default configuration..."
         mkdir $dir
         mkdir $default_config.output
         $default_config | to yaml | tee $"($dir)/config.yaml"
@@ -87,7 +89,7 @@ def get-config [config_path?: string] {
     }
 }
 
-# download with `yt-dlp`.
+# Download with `yt-dlp`.
 def download [
     url: string # Youtube url
     output_folder: string # File destination
@@ -98,15 +100,14 @@ def download [
 # Download recent youtube videos from a list of channel ids.
 def main [config_path?: string] {
     let config = (get-config $config_path)
-    print "Started yt-watcher with config:"
-    print ($config | to yaml)
+    std log info $"Started yt-watcher with config:\n($config | to json)"
     loop {
         $config.channels | each { |it|
             get-vids new $it -d $config.query.age | where { |file|
                 (((ls $config.output | describe ) == nothing) or
                 ((ls $config.output | string-search $"[($file.id)]" name | length ) == 0))
             } | each { |vid|
-                print $vid
+                std log info $"Download Started:\n($vid | to json)"
                 download $vid.url $config.output
             }
         } | ignore
