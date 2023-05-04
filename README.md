@@ -24,6 +24,9 @@ channels:
 - UCXuqSBlHAE6Xw-yeJA0Tunw
 ```
 
+To configure how videos are downloaded refer to the
+[configuration](https://github.com/yt-dlp/yt-dlp#configuration) options
+provided by `yt-dlp`.
 
 ## How to Use
 
@@ -71,11 +74,17 @@ configuration.
 ### Nushell
 
 This method is not ideal as `nushell` evolves quickly and scripts can become
-out-of-date very easily.
+out-of-date very easily. Managing dependencies is also cumbersome which is why
+the `Nix` method is recommended.
 
 Dependencies:
 - yt-dlp: 2023.03.04
 - nushell: 0.79.0
+
+Optional Dependencies:
+- ffmpeg
+- rtmpdump
+- atomicparsley
 
 ```
 # Pass into fresh nushell instance.
@@ -95,3 +104,4 @@ Any file in the `output` directory that contains a youtube video id will
 prevent that video download from being attempted; This includes `.part` and
 `.yt-dlp` files from failed download attempts alongside completed `.webm`
 files.
+
