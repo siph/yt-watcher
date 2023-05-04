@@ -75,7 +75,7 @@ out-of-date very easily.
 
 Dependencies:
 - yt-dlp: 2023.03.04
-- nushell: 0.77.1
+- nushell: 0.79.0
 
 ```
 # Pass into fresh nushell instance.
