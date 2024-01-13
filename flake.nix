@@ -2,113 +2,132 @@
   description = "Youtube auto-downloader";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # `0.88.1`
+    nixpkgs-nushell.url = "github:NixOS/nixpkgs/baa02207279115f5457c18fef3fc3513f58fa8d2";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    nupm = {
+      url = "github:siph/nupm/flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    pre-commit-hooks = {
+      url = "github:cachix/pre-commit-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
-  outputs = {
-    self,
+  outputs = inputs @ {
+    flake-parts,
     nixpkgs,
-    flake-utils,
+    nixpkgs-nushell,
+    nupm,
+    pre-commit-hooks,
+    treefmt-nix,
+    ...
   }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-        };
-        buildInputs = with pkgs; [
-          nushell
-          yt-dlp
-        ];
-      in with pkgs; rec {
-        packages = {
-          yt-watcher = stdenv.mkDerivation rec {
-            nativeBuildInputs = [ makeWrapper ];
+    flake-parts.lib.mkFlake {inherit inputs;} {
+      systems = [
+        "aarch64-linux"
+        "x86_64-linux"
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
+
+      imports = [
+        treefmt-nix.flakeModule
+      ];
+
+      perSystem = {
+        config,
+        lib,
+        pkgs,
+        self',
+        system,
+        ...
+      }: let
+        inherit (nixpkgs-nushell.legacyPackages.${system}) nushell;
+        treefmtWrapper = config.treefmt.build.wrapper;
+        buildInputs = with pkgs; [nushell yt-dlp];
+      in {
+        packages = with pkgs; rec {
+          yt-watcher = stdenvNoCC.mkDerivation rec {
+            nativeBuildInputs = [makeBinaryWrapper];
             inherit buildInputs;
             name = "yt-watcher";
             src = ./.;
+
+            # I don't know if there is any meaningful difference between
+            # ```shell
+            # nu \
+            # --no-config-file \
+            # --commands 'use ./yt-watcher ; yt-watcher'
+            # ```
+            #
+            # and
+            #
+            # ```shell
+            # nu ./yt-watcher/mod.nu
+            # ```
             installPhase = ''
               mkdir -p $out/bin
-              mkdir -p $out/nu
-              cp ./${name}.nu $out/nu
+              mkdir -p $out/share/${name}
+              mv ./* $out/share/${name}
               makeWrapper ${nushell}/bin/nu $out/bin/${name} \
-                --add-flags "$out/nu/${name}.nu"
+                --add-flags $out/share/${name}/${name}/mod.nu
             '';
           };
-          default = packages.yt-watcher;
+          default = yt-watcher;
         };
-        apps = {
-          yt-watcher = flake-utils.lib.mkApp { drv = packages.yt-watcher; };
-          default = apps.yt-watcher;
-        };
-        nixosModules = {
-          home-manager = { pkgs, lib, config, ... }:
-          with lib;
-          let
-            cfg = config.services.yt-watcher;
-          in {
-            options.services.yt-watcher = {
-              enable = mkOption {
-                type = types.bool;
-                default = false;
-                description = ''
-                  Run yt-watcher as service.
-                '';
-              };
-            };
-            config = mkIf cfg.enable {
-              systemd.user = {
-                services = {
-                  yt-watcher = {
-                    Service = {
-                      ExecStart = "${(self.packages.${system}.default)}/bin/yt-watcher ~/.config/yt-watcher";
-                      Restart = "on-failure";
-                      OOMPolicy = "kill";
-                    };
-                    Unit = {
-                      Description = "Youtube auto-downloader";
-                      Documentation = "https://www.github.com/siph/yt-watcher";
-                    };
-                  };
-                };
-              };
-            };
+
+        checks = {
+          pre-commit-check = pre-commit-hooks.lib.${system}.run {
+            src = ./.;
+            hooks.treefmt.enable = true;
+            settings.treefmt.package = treefmtWrapper;
           };
-          nixos = { pkgs, lib, config, ... }:
-          with lib;
-          let
-            cfg = config.services.yt-watcher;
-          in {
-            options.services.yt-watcher = {
-              enable = mkOption {
-                type = types.bool;
-                default = false;
-                description = ''
-                  Run yt-watcher as service.
-                '';
-              };
+
+          nushell-tests = with pkgs;
+            stdenv.mkDerivation {
+              inherit system;
+              name = "nushell tests";
+              src = ./.;
+              nativeBuildInputs = [nushell];
+              buildInputs = [wiremock];
+              buildPhase = ''
+                ${wiremock}/bin/wiremock \
+                  --disable-banner \
+                  --verbose \
+                  --root-dir ./tests &
+
+                sleep 2
+
+                nu --no-config-file \
+                  --commands '
+                    use ${nupm.packages.${system}.default}/share/nupm/nupm
+                    nupm test
+                  '
+              '';
+              installPhase = ''
+                touch $out
+              '';
             };
-            config = mkIf cfg.enable {
-              systemd = {
-                services = {
-                  yt-watcher = {
-                    serviceConfig = {
-                      Restart = "on-failure";
-                      ExecStart = "${(self.packages.${system}.default)}/bin/yt-watcher ~/.config/yt-watcher";
-                      OOMPolicy = "kill";
-                      Documentation = "https://www.github.com/siph/yt-watcher";
-                      Description = "Youtube auto-downloader";
-                    };
-                  };
-                };
-              };
-            };
+        };
+
+        treefmt = {
+          projectRootFile = "flake.nix";
+          programs = {
+            alejandra.enable = true;
+            # nufmt.enable = true;
           };
         };
-        devShells = {
+
+        devShells = with pkgs; {
           default = mkShell {
-            inherit buildInputs;
+            inherit (self'.checks.pre-commit-check) shellHook;
+            buildInputs = buildInputs ++ [treefmtWrapper wiremock];
           };
         };
-      });
+      };
+    };
 }

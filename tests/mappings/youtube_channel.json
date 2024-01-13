@@ -1,0 +1,13 @@
+{
+    "request": {
+        "method": "GET",
+        "urlPattern": "\/feeds\/videos\\.xml\\?channel_id=(.*)"
+    },
+    "response": {
+        "status": 200,
+        "bodyFileName": "youtube_channel.xml",
+        "headers": {
+            "Content-Type": "text/xml"
+        }
+    }
+}

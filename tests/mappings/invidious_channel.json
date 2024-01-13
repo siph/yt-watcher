@@ -1,0 +1,13 @@
+{
+    "request": {
+        "method": "GET",
+        "urlPattern": "\/api\/v1\/channels\/(.*)"
+    },
+    "response": {
+        "status": 200,
+        "bodyFileName": "invidious_channel.json",
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}

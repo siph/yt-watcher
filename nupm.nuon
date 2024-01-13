@@ -1,0 +1,15 @@
+# This doesn't do anything currently and will likely change:
+# https://github.com/nushell/nupm/blob/81b27e3d8dc81d2d98dec882e242932bd22ccf53/docs/design/README.md
+{
+    name: yt-watcher
+    type: application
+    nu-version: "0.88.1"
+    version: "0.1.0"
+    description: "Youtube auto-downloader"
+    supported-os: {
+        arch: ["*"]
+        family: ["unix"]
+        name: ["*"]
+    }
+    license: "MIT"
+}
