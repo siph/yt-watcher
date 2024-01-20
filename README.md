@@ -1,7 +1,12 @@
 # yt-watcher
 
-This is an application to automatically download recent Youtube channel
-video uploads.
+`yt-watcher` allows users to monitor a list of YouTube channels and
+automatically download their most recent videos. This tool simplifies the
+process of keeping track of your favorite content creators without compromising
+on privacy or needing to suffer through ads.
+
+This can be configured to use either the YouTube, or
+[`Invidious`](https://invidious.io/) api.
 
 
 ## Configuration
@@ -15,13 +20,14 @@ video uploads.
 query:
   interval: 1min
   age: 24hr
+  use_invidious: false
+  invidious_host: https://vid.puffyan.us/
 loop: true
 verbose: true
 output: /home/<user>/yt-watcher
 channels:
 - UCaYhcUwRBNscFNUKTjgPFiA
 - UCrW38UKhlPoApXiuKNghuig
-- UCXuqSBlHAE6Xw-yeJA0Tunw
 ```
 
 To configure how videos are downloaded refer to the
@@ -30,10 +36,6 @@ provided by `yt-dlp`.
 
 ## How to Use
 
-This is built for Unix systems and probably does not work on Windows, but maybe
-WSL2.
-
-
 ### Nix
 
 The best way to run this application is to use
@@ -41,35 +43,12 @@ The best way to run this application is to use
 dependencies needed to run the application.
 
 ```shell
-# Run from this repository directory.
-nix run
 # Run from remote repository.
 nix run "github:siph/yt-watcher"
+
+# With custom configuration file location
+nix run "github:siph/yt-watcher" -- ./config.yaml
 ```
-
-`yt-watcher` can also be ran as a systemd service, either user or system-wide,
-by including either the `system` or `home-manager` modules into your
-configuration.
-```nix
-{
-    # nixos system
-    nixpkgs.lib.nixosSystem = {
-        modules = [
-            yt-watcher.nixosModules.x86_64-linux.nixos
-            { services.yt-watcher.enable = true; }
-        ];
-    };
-
-    # home-manager
-    home-manager.lib.homeManagerConfiguration = {
-        modules = [
-            yt-watcher.nixosModules.x86_64-linux.home-manager
-            { services.yt-watcher.enable = true; }
-        ];
-    };
-}
-```
-
 
 ### Nushell
 
@@ -78,30 +57,16 @@ out-of-date very easily. Managing dependencies is also cumbersome which is why
 the `Nix` method is recommended.
 
 Dependencies:
-- yt-dlp: 2023.03.04
-- nushell: 0.79.0
+- yt-dlp: 2023.12.30
+- nushell: 0.88.1
 
 Optional Dependencies:
 - ffmpeg
 - rtmpdump
 - atomicparsley
 
+```shell
+nu \
+--no-config-file \
+--commands 'use ./yt-watcher ; yt-watcher'
 ```
-# Pass into fresh nushell instance.
-nu yt-watcher.nu
-
-# Create environment with script shebang.
-./yt-watcher.nu
-```
-
-## How it works
-
-`yt-watcher` is a `nushell` application that queries a collection of youtube
-channel RSS feeds at a given interval. Videos that haven't been downloaded and
-are within the `query.age` duration will be downloaded with `yt-dlp`.
-
-Any file in the `output` directory that contains a youtube video id will
-prevent that video download from being attempted; This includes `.part` and
-`.yt-dlp` files from failed download attempts alongside completed `.webm`
-files.
-
