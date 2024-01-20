@@ -199,11 +199,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1705177119,
-        "narHash": "sha256-RW8ZD1v497TxM0iNxhBrHeFfi0Z6eXf5/jVsIWCsVag=",
+        "lastModified": 1705733168,
+        "narHash": "sha256-2CJhqlHlxq+NWUM4djDcvEr7hrsyGmTjA4YEWnpJCys=",
         "owner": "siph",
         "repo": "nupm",
-        "rev": "2345de990125d211047cf59c3bc8a26d3a434d57",
+        "rev": "bc02d9fe0a61213c7a9d8e743834de8ba72751c2",
         "type": "github"
       },
       "original": {

@@ -49,6 +49,7 @@
         inherit (nixpkgs-nushell.legacyPackages.${system}) nushell;
         treefmtWrapper = config.treefmt.build.wrapper;
         buildInputs = with pkgs; [nushell yt-dlp];
+        nupm-test = nupm.packages.${system}.nupm-test;
       in {
         packages = with pkgs; rec {
           yt-watcher = stdenvNoCC.mkDerivation rec {
@@ -92,7 +93,7 @@
               inherit system;
               name = "nushell tests";
               src = ./.;
-              nativeBuildInputs = [nushell];
+              nativeBuildInputs = [nushell nupm-test];
               buildInputs = [wiremock];
               buildPhase = ''
                 ${wiremock}/bin/wiremock \
@@ -102,11 +103,7 @@
 
                 sleep 2
 
-                nu --no-config-file \
-                  --commands '
-                    use ${nupm.packages.${system}.default}/share/nupm/nupm
-                    nupm test
-                  '
+                nupm-test
               '';
               installPhase = ''
                 touch $out
