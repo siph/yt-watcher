@@ -32,7 +32,9 @@ export def main [
             | filter_by_age $config.query.age
             | where (is_completed $it.videoId $config.output | not $in)
 
-            log info $"New videos: ($recent_videos | to json)"
+            if ($recent_videos | length) > 0 {
+                log info $"New videos: ($recent_videos | to json)"
+            }
 
             $recent_videos
             | each {|it|
