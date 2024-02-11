@@ -26,6 +26,12 @@ export def get_config [
             loop:true
             verbose:true
             output:$"($env.HOME)/yt-watcher"
+            yt-dlp: {
+                config: {
+                    enable: false
+                    path:$"($env.XDG_CONFIG_HOME)/yt-dlp/config"
+                }
+            }
             channels:[
                 UCaYhcUwRBNscFNUKTjgPFiA
                 UCrW38UKhlPoApXiuKNghuig

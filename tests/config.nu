@@ -2,7 +2,7 @@ use ../yt-watcher/config.nu [get_config]
 
 use std assert
 
-export def test_missing_config_is_build [] {
+export def test_missing_config_is_built [] {
     let dirname = "yt-watcher"
 
     let test_dir = ("/tmp" | path join (random chars))
@@ -34,6 +34,12 @@ export def test_present_config_is_fetched [] {
         loop:false
         verbose:true
         output:$"($env.HOME)/yt-watcher"
+        yt-dlp: {
+            config: {
+                enable: false
+                path:$"($env.XDG_CONFIG_HOME)/yt-dlp/config"
+            }
+        }
         channels:[ test ]
     }
 

@@ -37,13 +37,13 @@ export def main [
             }
 
             $recent_videos
-            | each {|it|
-                if $config.query.use_invidious {
-                    download ($it.videoId | to_url $config.query.invidious_host ) $config.output
-                } else {
-                    download ($it.videoId | to_url "https://www.youtube.com") $config.output
+                | each {|it|
+                    if $config.query.use_invidious {
+                        download ($it.videoId | to_url $config.query.invidious_host) $config.output $config.yt-dlp
+                    } else {
+                        download ($it.videoId | to_url "https://www.youtube.com") $config.output $config.yt-dlp
+                    }
                 }
-            }
 
         if ($config.loop != true) { break }
 
@@ -54,8 +54,28 @@ export def main [
 def download [
     url: string           # Youtube url
     output_folder: string # File destination
+    yt_dlp: record        # Yt-dlp configuration info
 ] {
     log info $"Download started for ($url) to ($output_folder)"
-    yt-dlp -q $url --paths $output_folder
+    if yt_dlp.config.enable {
+        (
+            yt-dlp
+                --ignore-config
+                --config-locations
+                $yt_dlp.config.path
+                -q
+                $url
+                --paths
+                $output_folder
+        )
+    } else {
+        (
+            yt-dlp
+                -q
+                $url
+                --paths
+                $output_folder
+        )
+    }
 }
 

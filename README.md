@@ -25,6 +25,10 @@ query:
 loop: true
 verbose: true
 output: /home/<user>/yt-watcher
+yt-dlp:
+    config:
+        enable: false
+        path: /home/<user>/.config/yt-dlp/config
 channels:
 - UCaYhcUwRBNscFNUKTjgPFiA
 - UCrW38UKhlPoApXiuKNghuig
