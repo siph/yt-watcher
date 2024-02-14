@@ -57,7 +57,7 @@ def download [
     yt_dlp: record        # Yt-dlp configuration info
 ] {
     log info $"Download started for ($url) to ($output_folder)"
-    if yt_dlp.config.enable {
+    if $yt_dlp.config.enable {
         (
             yt-dlp
                 --ignore-config
