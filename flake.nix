@@ -48,8 +48,9 @@
       }:
         with pkgs; let
           inherit (nixpkgs-nushell.legacyPackages.${system}) nushell;
+
           treefmtWrapper = config.treefmt.build.wrapper;
-          buildInputs = [nushell yt-dlp];
+
           nupm-test = writeShellApplication {
             runtimeInputs = [nupm nushell];
             name = "nupm-test";
@@ -64,32 +65,20 @@
           };
         in {
           packages = with pkgs; rec {
-            yt-watcher = stdenvNoCC.mkDerivation rec {
-              nativeBuildInputs = [makeBinaryWrapper];
-              inherit buildInputs;
+            yt-watcher = stdenvNoCC.mkDerivation (finalAttrs: {
               name = "yt-watcher";
+              nativeBuildInputs = [makeBinaryWrapper];
               src = ./.;
-
-              # I don't know if there is any meaningful difference between
-              # ```shell
-              # nu \
-              # --no-config-file \
-              # --commands 'use ./yt-watcher ; yt-watcher'
-              # ```
-              #
-              # and
-              #
-              # ```shell
-              # nu ./yt-watcher/mod.nu
-              # ```
               installPhase = ''
                 mkdir -p $out/bin
-                mkdir -p $out/share/${name}
-                mv ./* $out/share/${name}
-                makeWrapper ${nushell}/bin/nu $out/bin/${name} \
-                  --add-flags $out/share/${name}/${name}/mod.nu
+                mkdir -p $out/share/${finalAttrs.name}
+                mv ./* $out/share/${finalAttrs.name}
+                makeWrapper ${nushell}/bin/nu $out/bin/${finalAttrs.name} \
+                  --add-flags $out/share/${finalAttrs.name}/${finalAttrs.name}/mod.nu \
+                  --prefix PATH : ${lib.makeBinPath [yt-dlp]}
               '';
-            };
+            });
+
             default = yt-watcher;
           };
 
@@ -134,7 +123,7 @@
           devShells = with pkgs; {
             default = mkShell {
               inherit (self'.checks.pre-commit-check) shellHook;
-              buildInputs = buildInputs ++ [nupm-test treefmtWrapper wiremock];
+              buildInputs = [nupm-test treefmtWrapper wiremock yt-dlp];
             };
           };
         };
