@@ -13,7 +13,11 @@ export def get_config [
 
     try {
         let config = open $config_file
-        mkdir $config.output
+
+        if not ($config.output | path exists) {
+            mkdir $config.output
+        }
+
         return $config
     } catch {
         let default_config = {
@@ -39,8 +43,15 @@ export def get_config [
         }
 
         log warning "Exporting default configuration..."
-        mkdir $"($env.XDG_CONFIG_HOME)/yt-watcher"
-        mkdir $default_config.output
+
+        if not ($"($env.XDG_CONFIG_HOME)/yt-watcher" | path exists) {
+            mkdir $"($env.XDG_CONFIG_HOME)/yt-watcher"
+        }
+
+        if not ($default_config.output | path exists) {
+            mkdir $default_config.output
+        }
+
         $default_config | to yaml | save $config_file
 
         return $default_config
