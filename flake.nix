@@ -3,8 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # `0.89.0`
-    nixpkgs-nushell.url = "github:NixOS/nixpkgs/ad22350c46fb528e3bd27fb08943c9d500852f02";
+    # `0.99.1`
+    nixpkgs-nushell.url = "github:NixOS/nixpkgs/d3503200cd28f0ecba42a9a4f82988f469932320";
     flake-parts.url = "github:hercules-ci/flake-parts";
     pre-commit-hooks = {
       url = "github:cachix/pre-commit-hooks.nix";
